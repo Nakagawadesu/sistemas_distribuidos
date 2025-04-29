@@ -4,7 +4,7 @@ public class ParallelMergeSort extends RecursiveAction {
     private int[] array;
     private int start;
     private int end;
-    private static final int THRESHOLD = 10000; // Adjust based on input size
+    private static final int THRESHOLD = 10000; 
 
     public ParallelMergeSort(int[] array, int start, int end) {
         this.array = array;
@@ -15,7 +15,7 @@ public class ParallelMergeSort extends RecursiveAction {
     @Override
     protected void compute() {
         if (end - start < THRESHOLD) {
-            sequentialMergeSort(array, start, end); // Merge Sort sequencial
+            sequentialMergeSort(array, start, end); 
             return;
         }
 
@@ -23,7 +23,7 @@ public class ParallelMergeSort extends RecursiveAction {
         ParallelMergeSort leftTask = new ParallelMergeSort(array, start, mid);
         ParallelMergeSort rightTask = new ParallelMergeSort(array, mid + 1, end);
 
-        invokeAll(leftTask, rightTask); // Fork both tasks
+        invokeAll(leftTask, rightTask); 
         merge(array, start, mid, end);
     }
 
@@ -48,8 +48,8 @@ public class ParallelMergeSort extends RecursiveAction {
         if (start >= end) return;
 
         int mid = (start + end) / 2;
-        sequentialMergeSort(array, start, mid);    // Ordena metade esquerda
-        sequentialMergeSort(array, mid + 1, end);  // Ordena metade direita
-        merge(array, start, mid, end);             // Mescla as partes
+        sequentialMergeSort(array, start, mid);    // esquerda
+        sequentialMergeSort(array, mid + 1, end);  //  direita
+        merge(array, start, mid, end);             
     }
 }
