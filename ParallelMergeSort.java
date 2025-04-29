@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.concurrent.RecursiveAction;
 
 public class ParallelMergeSort extends RecursiveAction {
@@ -16,8 +15,7 @@ public class ParallelMergeSort extends RecursiveAction {
     @Override
     protected void compute() {
         if (end - start < THRESHOLD) {
-            // Sort sequentially for small tasks
-            Arrays.sort(array, start, end + 1);
+            sequentialMergeSort(array, start, end); // Merge Sort sequencial
             return;
         }
 
@@ -45,5 +43,13 @@ public class ParallelMergeSort extends RecursiveAction {
         while (j <= end) temp[k++] = array[j++];
 
         System.arraycopy(temp, 0, array, start, temp.length);
+    }
+    private void sequentialMergeSort(int[] array, int start, int end) {
+        if (start >= end) return;
+
+        int mid = (start + end) / 2;
+        sequentialMergeSort(array, start, mid);    // Ordena metade esquerda
+        sequentialMergeSort(array, mid + 1, end);  // Ordena metade direita
+        merge(array, start, mid, end);             // Mescla as partes
     }
 }

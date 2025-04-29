@@ -3,26 +3,41 @@ import java.util.Random;
 import java.util.concurrent.ForkJoinPool;
 
 public class MergeSortComparison {
-    private static final int ARRAY_SIZE = 10_000_000; // Test with large arrays
+    private static final int ARRAY_SIZE = 10_000_000;
 
     public static void main(String[] args) {
+        // ### TESTES DE VALIDAÇÃO ###
+        int[] testArray = {5, 3, 8, 4, 2, 7, 1, 6, 9, 0};
+        System.out.println("Array original de teste: " + Arrays.toString(testArray));
+
+        int[] seqTest = testArray.clone();
+        Arrays.sort(seqTest);
+        System.out.println("Resultado sequencial:   " + Arrays.toString(seqTest));
+
+        int[] parTest = testArray.clone();
+        ForkJoinPool pool = new ForkJoinPool();
+        pool.invoke(new ParallelMergeSort(parTest, 0, parTest.length - 1));
+        System.out.println("Resultado paralelo:     " + Arrays.toString(parTest));
+
+        System.out.println("\n--- Iniciando testes de desempenho ---");
+
+        // ### TESTES DE DESEMPENHO ###
         int[] originalArray = generateLargeArray(ARRAY_SIZE);
         int[] arraySequential = originalArray.clone();
         int[] arrayParallel = originalArray.clone();
 
+        long sequentialTime = timeSequentialSort(arraySequential);
+        System.out.println("\nTempo sequencial: " + sequentialTime + " ms");
 
-        // Time Sequential Sort
-        long sequentialTime = timeSequentialSort(arraySequential.clone());
-        System.out.println("Sequential time: " + sequentialTime + " ms");
+        long parallelTime = timeParallelSort(arrayParallel);
+        System.out.println("Tempo paralelo:   " + parallelTime + " ms");
 
-        // Time Parallel Sort
-        long parallelTime = timeParallelSort(arrayParallel.clone());
-        System.out.println("Parallel time: " + parallelTime + " ms");
-
-        // Calculate Speedup
         double speedup = (double) sequentialTime / parallelTime;
         System.out.printf("Speedup: %.2fx%n", speedup);
 
+        System.out.println("\nVerificação final:");
+        System.out.println("Ordenação sequencial correta: " + isSorted(arraySequential));
+        System.out.println("Ordenação paralela correta:   " + isSorted(arrayParallel));
     }
 
     private static int[] generateLargeArray(int size) {
@@ -34,11 +49,10 @@ public class MergeSortComparison {
         return array;
     }
 
- 
-
     private static long timeSequentialSort(int[] array) {
+        SequentialMergeSort sorter = new SequentialMergeSort();
         long start = System.currentTimeMillis();
-        Arrays.sort(array);
+        sorter.mergeSort(array);
         return System.currentTimeMillis() - start;
     }
 
@@ -49,5 +63,10 @@ public class MergeSortComparison {
         return System.currentTimeMillis() - start;
     }
 
-
+    private static boolean isSorted(int[] array) {
+        for (int i = 0; i < array.length - 1; i++) {
+            if (array[i] > array[i + 1]) return false;
+        }
+        return true;
+    }
 }
