@@ -58,6 +58,7 @@ public class MergeSortComparison {
 
     private static long timeParallelSort(int[] array) {
         ForkJoinPool pool = new ForkJoinPool();
+        System.out.println("[Debug] Threads usadas no teste de desempenho: " + pool.getParallelism()); 
         long start = System.currentTimeMillis();
         pool.invoke(new ParallelMergeSort(array, 0, array.length - 1));
         return System.currentTimeMillis() - start;
