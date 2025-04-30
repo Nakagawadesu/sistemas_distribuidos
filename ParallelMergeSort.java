@@ -4,7 +4,9 @@ public class ParallelMergeSort extends RecursiveAction {
     private int[] array;
     private int start;
     private int end;
-    private static final int THRESHOLD = 10000; 
+    // calculei threshold ideal para o meu computador que tem 12 threads
+    // 10000000 / 12 = 833333, arredondado para 850000
+    private static final int THRESHOLD = 850_000; // Tamanho do array para dividir em tarefas paralelas 
 
     public ParallelMergeSort(int[] array, int start, int end) {
         this.array = array;
