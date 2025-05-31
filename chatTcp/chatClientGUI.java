@@ -161,13 +161,13 @@ public class chatClientGUI extends JFrame {
                 String[] parts = message.split(" ", 2);
                 if (parts.length < 2) {
                     appendMessage("Formato: /privado:usuario mensagem");
-                    messageField.clear();
+                    messageField.setText("");
                     return;
                 }
                 String[] dest = parts[0].split(":");
                 if (dest.length < 2) {
                     appendMessage("Formato: /privado:usuario mensagem");
-                    messageField.clear();
+                    messageField.setText("");
                     return;
                 }
                 msg = new Mensagem(username, dest[1], "/privado:" + dest[1] + ":" + parts[1]);
@@ -180,7 +180,7 @@ public class chatClientGUI extends JFrame {
             }
             
             out.writeObject(msg);
-            messageField.clear();
+            messageField.setText("");
             
         } catch (IOException e) {
             appendMessage("Erro ao enviar mensagem: " + e.getMessage());
@@ -247,9 +247,14 @@ public class chatClientGUI extends JFrame {
     public static void main(String[] args) {
         // Configurar Look and Feel
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeel());
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
         } catch (Exception e) {
-            // Usar Look and Feel padrão se não conseguir definir o do sistema
+            // Usar Look and Feel padrão se não conseguir definir o Nimbus
         }
         
         SwingUtilities.invokeLater(() -> {
