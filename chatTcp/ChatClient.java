@@ -52,11 +52,38 @@ public class ChatClient {
 
                 // Verifica se a mensagem é um comando de mensagem privada
                 if (input.startsWith("/privado:")) {
-                    // Formato esperado: /privado:destinatario mensagem_de_texto
-                    String[] parts = input.split(" ", 2); // Divide em "/privado:destinatario" e "mensagem_de_texto"
-                    String[] dest = parts[0].split(":");  // Divide "/privado:destinatario" para pegar "destinatario"
-                    // Cria a mensagem com o destinatário e o conteúdo formatado para o servidor
-                    msg = new Mensagem(username, dest[1], "/privado:" + dest[1] + ":" + parts[1]);
+                    // Formato esperado pelo usuário: /privado:destinatario:mensagem_de_texto
+                    try {
+                        // Remove o prefixo "/privado:" para obter "destinatario:mensagem_de_texto"
+                        String commandPayload = input.substring("/privado:".length());
+                        
+                        // Encontra o índice do primeiro ':' que separa o destinatário da mensagem
+                        int firstColonIndex = commandPayload.indexOf(':');
+
+                        // Verifica se o formato é válido (deve haver um ':' e conteúdo antes e depois dele)
+                        if (firstColonIndex > 0 && firstColonIndex < commandPayload.length() - 1) {
+                            String recipientName = commandPayload.substring(0, firstColonIndex).trim(); // Extrai o nome do destinatário
+                            String privateContent = commandPayload.substring(firstColonIndex + 1).trim(); // Extrai o conteúdo da mensagem privada
+
+                            // O conteúdo a ser enviado ao servidor deve manter o formato /privado:dest:msg
+                            // para que o servidor possa identificá-lo e processá-lo corretamente.
+                            String serverExpectedContent = "/privado:" + recipientName + ":" + privateContent;
+                            
+                            // Cria o objeto Mensagem com o remetente, o destinatário extraído,
+                            // e o conteúdo formatado para o servidor.
+                            msg = new Mensagem(username, recipientName, serverExpectedContent);
+                        } else {
+                            // Se o formato do comando privado for inválido
+                            System.out.println("[CLIENTE] Formato inválido para mensagem privada. Use /privado:destinatario:mensagem");
+                            // Envia a mensagem como pública para não interromper o fluxo ou poderia simplesmente não enviar.
+                            // Optou-se por enviar como pública para feedback ao usuário.
+                            msg = new Mensagem(username, null, input + " (formato privado inválido)");
+                        }
+                    } catch (Exception e) {
+                        // Em caso de erro inesperado no parsing do comando privado
+                        System.out.println("[CLIENTE] Erro ao processar comando privado. Enviando como mensagem pública.");
+                        msg = new Mensagem(username, null, input); // Envia como mensagem pública
+                    }
                 } else {
                     // Se não for comando privado, é uma mensagem pública (broadcast)
                     msg = new Mensagem(username, null, input); // Destinatário null indica broadcast
@@ -66,7 +93,8 @@ public class ChatClient {
             }
         } catch (Exception e) { // Captura qualquer exceção durante o envio
             System.err.println("Erro ao enviar mensagem: " + e.getMessage());
-            // A thread principal pode terminar aqui, mas a MessageReceiver continua tentando ler
+            // A thread principal pode terminar aqui se o Scanner falhar,
+            // mas a MessageReceiver continuaria tentando ler se a conexão ainda estiver ativa.
         }
     }
 
@@ -86,12 +114,19 @@ public class ChatClient {
                 while (true) { // Loop infinito para continuar recebendo mensagens
                     // Lê um objeto Mensagem do servidor (bloqueia até receber)
                     Mensagem msg = (Mensagem) in.readObject();
-                    System.out.println(msg); // Imprime a mensagem no console (usa o método toString() da classe Mensagem)
+                    // Imprime a mensagem no console. O método toString() da classe Mensagem
+                    // deve formatar a mensagem adequadamente (incluindo remetente, timestamp, etc.).
+                    System.out.println(msg);
                 }
-            } catch (Exception e) { // Captura exceção se a conexão for perdida ou houver erro
-                System.err.println("Conexão com o servidor perdida.");
-                // A thread termina aqui
+            } catch (EOFException | SocketException e) { // Exceções comuns de desconexão
+                 System.err.println("Conexão com o servidor perdida ou fechada.");
+            } catch (IOException | ClassNotFoundException e) { // Outros erros de I/O ou de classe
+                System.err.println("Erro ao receber mensagem: " + e.getMessage());
+            } catch (Exception e) { // Captura genérica para outros erros inesperados
+                System.err.println("Erro inesperado no recebimento: " + e.getMessage());
             }
+            // Se sair do loop (devido a uma exceção), a thread termina.
+            System.err.println("Thread de recebimento de mensagens encerrada.");
         }
     }
 }
