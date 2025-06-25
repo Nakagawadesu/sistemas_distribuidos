@@ -47,6 +47,7 @@ public class chatClientGUI extends JFrame {
         messagesArea.setEditable(false); // Impede que o usuário edite diretamente a área de mensagens
         messagesArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12)); // Define a fonte
         messagesArea.setBackground(Color.WHITE); // Define a cor de fundo
+        messagesArea.setForeground(Color.BLACK); // Define a cor do texto
         messagesArea.setLineWrap(true); // Habilita a quebra de linha automática
         messagesArea.setWrapStyleWord(true); // Faz a quebra de linha respeitando palavras inteiras
 
